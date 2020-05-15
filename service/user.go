@@ -32,18 +32,15 @@ func (s *UserService) Register(mobile, plainpwd, nickname, avatar, sex string) (
 	tmp.Salt = fmt.Sprintf("%06d", rand.Int31n(10000))
 	tmp.Passwd = util.MakePasswd(plainpwd, tmp.Salt)
 	tmp.Createat = time.Now()
-	//token 可以是一个随机数
 	tmp.Token = fmt.Sprintf("%08d", rand.Int31())
-	//passwd = ; md5 加密
-	//插入 InserOne
 	_, err = DbEngin.InsertOne(&tmp)
-	//前端恶意插入特殊字符
-	//数据库连接操作失败
+	//前端恶意插入特殊字符?
+	//数据库连接操作失败?
 	return tmp, err
 }
 
 func (s *UserService) Login(mobile, plainpwd string) (user model.User, err error) {
-	tmp := model.User{} //首先通过手机号查询用户
+	tmp := model.User{}
 	_, err = DbEngin.Where("mobile = ?", mobile).Get(&tmp)
 	if tmp.Id == 0 {
 		return tmp, errors.New("该用户不存在")
@@ -55,7 +52,6 @@ func (s *UserService) Login(mobile, plainpwd string) (user model.User, err error
 	str := fmt.Sprintf("%d", time.Now().Unix())
 	token := util.MD5Encode(str)
 	tmp.Token = token
-	//返回数据
 	_, err = DbEngin.Where(" id = ?", tmp.Id).Cols("token").Update(&tmp)
 	return tmp, err
 }

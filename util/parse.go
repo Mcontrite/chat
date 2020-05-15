@@ -1,50 +1,45 @@
 package util
 
 import (
-
-	"net/http"
-
-	"io/ioutil"
-	"strings"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
 )
 
-
-func Bind(req *http.Request,obj interface{}) error{
+func Bind(req *http.Request, obj interface{}) error {
 	contentType := req.Header.Get("Content-Type")
-	//如果是简单的json
-	if strings.Contains(strings.ToLower(contentType),"application/json"){
-		return  BindJson(req,obj)
+	if strings.Contains(strings.ToLower(contentType), "application/json") {
+		return BindJson(req, obj)
 	}
-	if strings.Contains(strings.ToLower(contentType),"application/x-www-form-urlencoded"){
-		return   BindForm(req,obj)
+	if strings.Contains(strings.ToLower(contentType), "application/x-www-form-urlencoded") {
+		return BindForm(req, obj)
 	}
 	return errors.New("当前方法暂不支持")
 }
 
-func BindJson(req *http.Request,obj interface{}) error{
-	s, err := ioutil.ReadAll(req.Body) //把  body 内容读入字符串
-	if err!=nil{
+func BindJson(req *http.Request, obj interface{}) error {
+	s, err := ioutil.ReadAll(req.Body) //把 body 内容读入字符串
+	if err != nil {
 		return err
 	}
-	err = json.Unmarshal(s,obj)
+	err = json.Unmarshal(s, obj)
 	return err
 }
 
-func BindForm(req *http.Request,ptr interface{}) error{
+func BindForm(req *http.Request, ptr interface{}) error {
 	req.ParseForm()
 	fmt.Println(req.Form.Encode())
-	err := mapForm(ptr,req.Form)
+	err := mapForm(ptr, req.Form)
 	return err
 }
-//自动绑定方法
-//借鉴了gin
-//改良了时间绑定,
+
+//自动绑定方法，借鉴了gin，改良了时间绑定,
 func mapForm(ptr interface{}, form map[string][]string) error {
 	typ := reflect.TypeOf(ptr).Elem()
 	val := reflect.ValueOf(ptr).Elem()
@@ -54,12 +49,10 @@ func mapForm(ptr interface{}, form map[string][]string) error {
 		if !structField.CanSet() {
 			continue
 		}
-
 		structFieldKind := structField.Kind()
- 		inputFieldName := typeField.Tag.Get("form")
+		inputFieldName := typeField.Tag.Get("form")
 		if inputFieldName == "" {
 			inputFieldName = typeField.Name
-
 			// if "form" tag is nil, we inspect if the field is a struct.
 			// this would not make sense for JSON parsing but it does for a form
 			// since data is flatten
@@ -75,7 +68,6 @@ func mapForm(ptr interface{}, form map[string][]string) error {
 		if !exists {
 			continue
 		}
-
 		numElems := len(inputValue)
 		if structFieldKind == reflect.Slice && numElems > 0 {
 			sliceOf := structField.Type().Elem().Kind()
@@ -184,36 +176,30 @@ func setFloatField(val string, bitSize int, field reflect.Value) error {
 func setTimeField(val string, structField reflect.StructField, value reflect.Value) error {
 	timeFormat := structField.Tag.Get("time_format")
 	//2018-01-02 01:02:03
-
 	if timeFormat == "" {
 		timeFormat = "2006-01-02 15:04:05"
-		val = strings.Replace(val,"/","-",0)
-		num := len(strings.Split(val," "))
-		if num==1{
-			val = val +" 00:00:00"
-		}else{
+		val = strings.Replace(val, "/", "-", 0)
+		num := len(strings.Split(val, " "))
+		if num == 1 {
+			val = val + " 00:00:00"
+		} else {
 			//2018-01-02 00
-			num =len(strings.Split(val,":"))
-
-			if num==1{
-				val = val +":00:00"
-			}else if num==2{
-				val = val +":00"
+			num = len(strings.Split(val, ":"))
+			if num == 1 {
+				val = val + ":00:00"
+			} else if num == 2 {
+				val = val + ":00"
 			}
 		}
-
 	}
-
 	if val == "" {
 		value.Set(reflect.ValueOf(time.Time{}))
 		return nil
 	}
-
 	l := time.Local
 	if isUTC, _ := strconv.ParseBool(structField.Tag.Get("time_utc")); isUTC {
 		l = time.UTC
 	}
-
 	if locTag := structField.Tag.Get("time_location"); locTag != "" {
 		loc, err := time.LoadLocation(locTag)
 		if err != nil {
@@ -221,12 +207,10 @@ func setTimeField(val string, structField reflect.StructField, value reflect.Val
 		}
 		l = loc
 	}
-
 	t, err := time.ParseInLocation(timeFormat, val, l)
 	if err != nil {
 		return err
 	}
-
 	value.Set(reflect.ValueOf(t))
 	return nil
 }

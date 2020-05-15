@@ -10,16 +10,8 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-//注册首页自动跳转
-func RegisterIndex() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, "/user/login.shtml", http.StatusFound) //跳转到百度
-	})
-}
-
 //注册模板
 func RegisterView() {
-	//一次解析出全部模板
 	tpl, err := template.ParseGlob("view/**/*")
 	if nil != err {
 		log.Fatal(err)
@@ -38,6 +30,13 @@ func RegisterView() {
 	}
 }
 
+//注册首页自动跳转
+func RegisterIndex() {
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/user/login.shtml", http.StatusFound) //跳转到百度
+	})
+}
+
 func main() {
 	//绑定请求和处理函数
 	http.HandleFunc("/user/login", ctrl.UserLogin)
@@ -50,9 +49,7 @@ func main() {
 	http.HandleFunc("/contact/addfriend", ctrl.Addfriend)
 	http.HandleFunc("/chat", ctrl.Chat)
 	http.HandleFunc("/attach/upload", ctrl.Upload)
-	//1 提供静态资源目录支持
-	//http.Handle("/", http.FileServer(http.Dir(".")))
-	//2 指定目录的静态文件
+	// 指定静态文件目录
 	http.Handle("/asset/", http.FileServer(http.Dir(".")))
 	http.Handle("/mnt/", http.FileServer(http.Dir(".")))
 

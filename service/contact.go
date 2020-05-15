@@ -6,55 +6,37 @@ import (
 	"time"
 )
 
-type ContactService struct {
-}
+type ContactService struct{}
 
-//自动添加好友
-func (service *ContactService) AddFriend(
-	userid, //用户id 10086,
-	dstid int64) error {
-	//如果加自己
+//添加好友
+func (service *ContactService) AddFriend(userid, dstid int64) error {
 	if userid == dstid {
-		return errors.New("不能添加自己为好友啊")
+		return errors.New("不能添加自己为好友")
 	}
 	//判断是否已经加了好友
 	tmp := model.Contact{}
-	//查询是否已经是好友
-	// 条件的链式操作
-	DbEngin.Where("ownerid = ?", userid).
-		And("dstid = ?", dstid).
-		And("cate = ?", model.CONCAT_CATE_USER).
-		Get(&tmp)
-	//获得1条记录
-	//count()
-	//如果存在记录说明已经是好友了不加
+	DbEngin.Where("ownerid = ?", userid).And("dstid = ?", dstid).And("cate = ?", model.CONCAT_CATE_USER).Get(&tmp)
 	if tmp.Id > 0 {
 		return errors.New("该用户已经被添加过啦")
 	}
-	//事务,
-	session := DbEngin.NewSession()
+	session := DbEngin.NewSession() //事务
 	session.Begin()
-	//插自己的
-	_, e2 := session.InsertOne(model.Contact{
+	_, e2 := session.InsertOne(model.Contact{ //插入自己的数据
 		Ownerid:  userid,
 		Dstobj:   dstid,
 		Cate:     model.CONCAT_CATE_USER,
 		Createat: time.Now(),
 	})
-	//插对方的
-	_, e3 := session.InsertOne(model.Contact{
+	_, e3 := session.InsertOne(model.Contact{ //插入对方的数据
 		Ownerid:  dstid,
 		Dstobj:   userid,
 		Cate:     model.CONCAT_CATE_USER,
 		Createat: time.Now(),
 	})
-	//没有错误
 	if e2 == nil && e3 == nil {
-		//提交
 		session.Commit()
 		return nil
 	} else {
-		//回滚
 		session.Rollback()
 		if e2 != nil {
 			return e2
@@ -78,6 +60,7 @@ func (service *ContactService) SearchComunity(userId int64) []model.Community {
 	DbEngin.In("id", comIds).Find(&coms)
 	return coms
 }
+
 func (service *ContactService) SearchComunityIds(userId int64) (comIds []int64) {
 	//todo 获取用户全部群ID
 	conconts := make([]model.Contact, 0)
@@ -116,12 +99,10 @@ func (service *ContactService) CreateCommunity(comm model.Community) (ret model.
 		err = errors.New("请先登录")
 		return ret, err
 	}
-	com := model.Community{
-		Ownerid: comm.Ownerid,
-	}
+	com := model.Community{Ownerid: comm.Ownerid}
 	num, err := DbEngin.Count(&com)
 	if num > 5 {
-		err = errors.New("一个用户最多只能创见5个群")
+		err = errors.New("一个用户最多创5个群")
 		return com, err
 	} else {
 		comm.Createat = time.Now()

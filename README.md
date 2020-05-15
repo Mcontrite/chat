@@ -1,3 +1,14 @@
+handlefunc handle
+Md5Encode
+errors
+
+
+
+
+
+
+
+
 
 # 先上效果
 ![界面效果图](https://www.techidea8.com/app/chat/3.jpg)

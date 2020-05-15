@@ -26,11 +26,8 @@ func init() {
 	if nil != err && NONERROR != err.Error() {
 		log.Fatal(err.Error())
 	}
-	//是否显示SQL语句
-	DbEngin.ShowSQL(showSQL)
-	//数据库最大打开的连接数
-	DbEngin.SetMaxOpenConns(maxCon)
-	//自动建表
-	DbEngin.Sync2(new(model.User), new(model.Contact), new(model.Community))
+	DbEngin.ShowSQL(showSQL)                                                 //是否显示SQL语句
+	DbEngin.SetMaxOpenConns(maxCon)                                          //最大打开的连接数
+	DbEngin.Sync2(new(model.User), new(model.Contact), new(model.Community)) //自动建表
 	fmt.Println("init data base ok")
 }
