@@ -13,7 +13,6 @@ import (
 
 type UserService struct{}
 
-//注册函数
 func (s *UserService) Register(mobile, plainpwd, nickname, avatar, sex string) (user model.User, err error) {
 	//检测手机号码是否存在,
 	tmp := model.User{}

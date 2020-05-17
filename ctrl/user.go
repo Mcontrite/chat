@@ -9,19 +9,6 @@ import (
 
 var userService service.UserService
 
-func UserLogin(writer http.ResponseWriter, request *http.Request) {
-	//restapi json/xml返回
-	request.ParseForm()
-	mobile := request.PostForm.Get("mobile")
-	passwd := request.PostForm.Get("passwd")
-	user, err := userService.Login(mobile, passwd)
-	if err != nil {
-		util.RespFail(writer, err.Error())
-	} else {
-		util.RespOk(writer, user, "")
-	}
-}
-
 func UserRegister(writer http.ResponseWriter, request *http.Request) {
 	//request.ParseForm()
 	//mobile := request.PostForm.Get("mobile")
@@ -38,6 +25,19 @@ func UserRegister(writer http.ResponseWriter, request *http.Request) {
 		user.Nickname,
 		user.Avatar,
 		user.Sex)
+	if err != nil {
+		util.RespFail(writer, err.Error())
+	} else {
+		util.RespOk(writer, user, "")
+	}
+}
+
+func UserLogin(writer http.ResponseWriter, request *http.Request) {
+	//restapi json/xml返回
+	request.ParseForm()
+	mobile := request.PostForm.Get("mobile")
+	passwd := request.PostForm.Get("passwd")
+	user, err := userService.Login(mobile, passwd)
 	if err != nil {
 		util.RespFail(writer, err.Error())
 	} else {

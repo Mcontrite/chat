@@ -10,20 +10,15 @@ import (
 
 var contactService service.ContactService
 
-//加载个人的好友
-func LoadFriend(w http.ResponseWriter, req *http.Request) {
-	var arg args.ContactArg
+func CreateCommunity(w http.ResponseWriter, req *http.Request) {
+	var arg model.Community
 	util.Bind(req, &arg)
-	users := contactService.SearchFriend(arg.Userid)
-	util.RespOkList(w, users, len(users))
-}
-
-//加载他的群
-func LoadCommunity(w http.ResponseWriter, req *http.Request) {
-	var arg args.ContactArg
-	util.Bind(req, &arg)
-	comunitys := contactService.SearchComunity(arg.Userid)
-	util.RespOkList(w, comunitys, len(comunitys))
+	com, err := contactService.CreateCommunity(arg)
+	if err != nil {
+		util.RespFail(w, err.Error())
+	} else {
+		util.RespOk(w, com, "")
+	}
 }
 
 func JoinCommunity(w http.ResponseWriter, req *http.Request) {
@@ -39,16 +34,12 @@ func JoinCommunity(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-//创建群
-func CreateCommunity(w http.ResponseWriter, req *http.Request) {
-	var arg model.Community
+//加载他的群
+func LoadCommunity(w http.ResponseWriter, req *http.Request) {
+	var arg args.ContactArg
 	util.Bind(req, &arg)
-	com, err := contactService.CreateCommunity(arg)
-	if err != nil {
-		util.RespFail(w, err.Error())
-	} else {
-		util.RespOk(w, com, "")
-	}
+	comunitys := contactService.SearchComunity(arg.Userid)
+	util.RespOkList(w, comunitys, len(comunitys))
 }
 
 //添加好友
@@ -64,4 +55,12 @@ func Addfriend(w http.ResponseWriter, req *http.Request) {
 	} else {
 		util.RespOk(w, nil, "好友添加成功")
 	}
+}
+
+//加载个人的好友
+func LoadFriend(w http.ResponseWriter, req *http.Request) {
+	var arg args.ContactArg
+	util.Bind(req, &arg)
+	users := contactService.SearchFriend(arg.Userid)
+	util.RespOkList(w, users, len(users))
 }
