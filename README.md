@@ -2,9 +2,9 @@ handlefunc handle
 Md5Encode
 errors
 bind
-
-
-
+os.ModePerm
+strings.Split()函数用于将指定的分隔符切割字符串，并返回切割后的字符串切片。
+reflect
 
 
 

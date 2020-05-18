@@ -117,6 +117,52 @@ func recvproc(node *Node) {
 	}
 }
 
+//后端调度逻辑处理
+func dispatch(data []byte) {
+	//todo 解析data为message
+	msg := model.Message{}
+	err := json.Unmarshal(data, &msg)
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+	//todo 根据cmd对逻辑进行处理
+	switch msg.Cmd {
+	case CMD_SINGLE_MSG:
+		sendMsg(msg.Dstid, data)
+	case CMD_ROOM_MSG:
+		//todo 群聊转发逻辑
+		for userId, v := range clientMap {
+			if v.GroupSets.Has(msg.Dstid) {
+				//自己排除,不发送
+				if msg.Userid != userId {
+					v.DataQueue <- data
+				}
+
+			}
+		}
+	case CMD_HEART:
+		//todo 一般啥都不做
+	}
+}
+
+//todo 发送消息
+func sendMsg(userId int64, msg []byte) {
+	rwlocker.RLock()
+	node, ok := clientMap[userId]
+	rwlocker.RUnlock()
+	if ok {
+		node.DataQueue <- msg
+	}
+}
+
+//检测是否有效
+func checkToken(userId int64, token string) bool {
+	//从数据库里面查询并比对
+	user := userService.Find(userId)
+	return user.Token == token
+}
+
 func init() {
 	go udpsendproc()
 	go udprecvproc()
@@ -182,50 +228,4 @@ func udprecvproc() {
 		dispatch(buf[0:n])
 	}
 	log.Println("stop updrecvproc")
-}
-
-//后端调度逻辑处理
-func dispatch(data []byte) {
-	//todo 解析data为message
-	msg := model.Message{}
-	err := json.Unmarshal(data, &msg)
-	if err != nil {
-		log.Println(err.Error())
-		return
-	}
-	//todo 根据cmd对逻辑进行处理
-	switch msg.Cmd {
-	case CMD_SINGLE_MSG:
-		sendMsg(msg.Dstid, data)
-	case CMD_ROOM_MSG:
-		//todo 群聊转发逻辑
-		for userId, v := range clientMap {
-			if v.GroupSets.Has(msg.Dstid) {
-				//自己排除,不发送
-				if msg.Userid != userId {
-					v.DataQueue <- data
-				}
-
-			}
-		}
-	case CMD_HEART:
-		//todo 一般啥都不做
-	}
-}
-
-//todo 发送消息
-func sendMsg(userId int64, msg []byte) {
-	rwlocker.RLock()
-	node, ok := clientMap[userId]
-	rwlocker.RUnlock()
-	if ok {
-		node.DataQueue <- msg
-	}
-}
-
-//检测是否有效
-func checkToken(userId int64, token string) bool {
-	//从数据库里面查询并比对
-	user := userService.Find(userId)
-	return user.Token == token
 }

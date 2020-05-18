@@ -14,6 +14,7 @@ import (
 )
 
 func init() {
+	// 存储位置 ./mnt,需要确保已经创建好
 	os.MkdirAll("./mnt", os.ModePerm)
 }
 
@@ -22,7 +23,6 @@ func Upload(w http.ResponseWriter, r *http.Request) {
 	//UploadOss(w,r)
 }
 
-// 存储位置 ./mnt,需要确保已经创建好
 // url格式 /mnt/xxxx.png  需要确保网络能访问/mnt/
 func UploadLocal(writer http.ResponseWriter, request *http.Request) {
 	//todo 获得上传的源文件s
@@ -44,7 +44,6 @@ func UploadLocal(writer http.ResponseWriter, request *http.Request) {
 	if len(filetype) > 0 {
 		suffix = filetype
 	}
-	//time.Now().Unix()
 	filename := fmt.Sprintf("%d%04d%s", time.Now().Unix(), rand.Int31(), suffix)
 	dstfile, err := os.Create("./mnt/" + filename)
 	if err != nil {
@@ -71,10 +70,8 @@ const (
 	Bucket          = "winliondev"
 )
 
-//权限设置为公共读状态
-//需要安装
-func UploadOss(writer http.ResponseWriter,
-	request *http.Request) {
+//需要安装, 权限设置为公共读状态
+func UploadOss(writer http.ResponseWriter, request *http.Request) {
 	//todo 获得上传的文件
 	srcfile, head, err := request.FormFile("file")
 	if err != nil {
