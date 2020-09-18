@@ -56,6 +56,6 @@ func main() {
 	RegisterView()
 	RegisterIndex()
 
-	fmt.Println("run at :8080")
-	http.ListenAndServe(":8080", nil)
+	fmt.Println("run at :3030")
+	http.ListenAndServe(":3030", nil)
 }
